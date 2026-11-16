@@ -1,18 +1,40 @@
-@extends('layouts.admin') 
+@@extends('layouts.admin') 
 
-@section('title','Kategori') 
+@section('title','Stok') 
 
-@section('content')<h1>Kategori</h1> 
+@section('content')<div class="row" style="justify-content:space-between"> 
+
+<h1>Histori Stok</h1> 
+
+<a class="btn" href="{{ route('admin.stock.create') }}">Barang Masuk</a> 
+
+</div> 
 
 <div class="card"> 
 
-<form method="POST" action="{{ route('admin.categories.store') }}">@csrf<label>Nama Kategori<input class="input" 
+<form class="row" method="GET"> 
 
-name="name" required> 
+<label>Produk<select name="product_id"> 
+
+<option value="">Semua</option>@foreach($products as $product)<option value="{{ $product->id }}" 
+
+@selected(request('product_id')==$product->id)>{{ $product->name }}</option>@endforeach</select> 
 
 </label> 
 
-<button class="btn">Tambah</button> 
+<label>Tipe<select name="type"> 
+
+<option value="">Semua</option> 
+
+<option value="IN">IN</option> 
+
+<option value="OUT">OUT</option> 
+
+</select> 
+
+</label> 
+
+<button class="btn">Filter</button> 
 
 </form> 
 
@@ -24,38 +46,32 @@ name="name" required>
 
 <tr> 
 
-<th>Nama</th> 
+<th>Waktu</th> 
 
-<th>Jumlah Produk</th> 
+<th>Produk</th> 
 
-<th>Aksi</th> 
+<th>Tipe</th> 
 
-</tr>@foreach($categories as $category)<tr> 
+<th>Qty</th> 
 
-<td> 
+<th>Referensi</th> 
 
-<form class="row" method="POST" action="{{ route('admin.categories.update',$category) }}">@csrf @method('PUT')<input 
+<th>User</th> 
 
-class="input" style="max-width:240px" name="name" value="{{ $category->name }}"> 
+</tr>@foreach($movements as $movement)<tr> 
 
-<button class="btn">Simpan</button> 
+<td>{{ $movement->movement_at->format('d-m-Y H:i') }}</td> 
 
-</form> 
+<td>{{ $movement->product->name }}</td> 
 
-</td> 
+<td>{{ $movement->type }}</td> 
 
-<td>{{ $category->products_count }}</td> 
+<td>{{ $movement->quantity }}</td> 
 
-<td> 
+<td>{{ $movement->reference }}</td> 
 
-<form method="POST" action="{{ route('admin.categories.destroy',$category) }}">@csrf @method('DELETE')<button 
+<td>{{ $movement->user?->name }}</td> 
 
-class="btn btn-danger">Hapus</button> 
+</tr>@endforeach</table></div>{{ $movements->links() }}</div>@endsection 
 
-</form> 
-
-</td> 
-
-</tr>@endforeach</table></div> 
-
-</div>@endsection 
+ 

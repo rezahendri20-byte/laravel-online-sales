@@ -1,72 +1,89 @@
-<?php 
- 
-namespace App\Http\Controllers; 
- 
-use App\Models\User; 
-use Illuminate\Http\RedirectResponse; 
-use Illuminate\Http\Request; 
-use Illuminate\Support\Facades\Auth; 
-use Illuminate\Support\Facades\Hash; 
-use Illuminate\Validation\Rules\Password; 
-use Illuminate\View\View; 
- 
-class AuthController extends Controller 
-{ 
-    public function showLogin(): View 
-    { 
-        return view('auth.login'); 
-    } 
- 
-    public function login(Request $request): RedirectResponse 
-    { 
-        $credentials = $request->validate([ 
-            'email' => ['required', 'email'], 
-            'password' => ['required'], 
-        ]); 
- 
-        if (! Auth::attempt($credentials)) { 
-            return back()->withErrors(['email' => 'Email atau password tidak sesuai.'])->onlyInput('email'); 
-        } 
- 
-        $request->session()->regenerate(); 
- 
-        return $request->user()->role === 'admin' 
-            ? redirect()->route('admin.dashboard') 
-            : redirect()->intended(route('shop.index')); 
-    } 
- 
-    public function showRegister(): View 
-    { 
-        return view('auth.register'); 
-    } 
- 
-    public function register(Request $request): RedirectResponse 
-    { 
-        $data = $request->validate([ 
-            'name' => ['required', 'max:120'], 
-            'email' => ['required', 'email', 'max:150', 'unique:users,email'], 
-            'password' => ['required', 'confirmed', Password::min(8)], 
-        ]); 
- 
-        $user = User::create([ 
-            'name' => $data['name'], 
-            'email' => $data['email'], 
-            'password' => Hash::make($data['password']), 
-            'role' => 'customer', 
-        ]); 
- 
-        Auth::login($user); 
-        $request->session()->regenerate(); 
- 
-        return redirect()->route('shop.index'); 
-    } 
- 
-    public function logout(Request $request): RedirectResponse 
-    { 
-        Auth::logout(); 
-        $request->session()->invalidate(); 
-        $request->session()->regenerateToken(); 
- 
-        return redirect()->route('shop.index'); 
-    } 
-} 
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+
+class AuthController extends Controller
+{
+    // Menampilkan halaman login
+    public function showLogin(): View
+    {
+        return view('auth.login');
+    }
+
+    // Proses login
+    public function login(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (!Auth::attempt($credentials)) {
+            return back()
+                ->withErrors([
+                    'email' => 'Email atau password tidak sesuai.'
+                ])
+                ->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('shop.index');
+    }
+
+    // Menampilkan halaman register
+    public function showRegister(): View
+    {
+        return view('auth.register');
+    }
+
+    // Proses register
+    public function register(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'max:120'],
+            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+            ],
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'customer',
+        ]);
+
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+        return redirect()->route('shop.index');
+    }
+
+    // Proses logout
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('shop.index');
+    }
+}

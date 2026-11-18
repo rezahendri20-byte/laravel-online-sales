@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController;
 
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -83,3 +87,26 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::delete('/keranjang/{product}', [CartController::class, 'destroy'])
         ->name('cart.destroy');
 });
+
+Route::middleware(['auth','role:customer'])->group(function () { 
+    Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index'); 
+    Route::post('/keranjang/{product}', [CartController::class, 'store'])->name('cart.store'); 
+    Route::patch('/keranjang/{product}', [CartController::class, 'update'])->name('cart.update'); 
+    Route::delete('/keranjang/{product}', [CartController::class, 'destroy'])->name('cart.destroy'); 
+}); 
+
+Route::middleware(['auth','role:customer'])->group(function () { 
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index'); 
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store'); 
+    Route::get('/pesanan', [CustomerOrderController::class, 'index'])->name('orders.index'); 
+    Route::get('/pesanan/{order}', [CustomerOrderController::class, 'show'])->name('orders.show'); 
+}); 
+
+Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group(function () { 
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard'); 
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index'); 
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show'); 
+    Route::patch('/orders/{order}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm'); 
+    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status'); 
+    Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel'); 
+}); 

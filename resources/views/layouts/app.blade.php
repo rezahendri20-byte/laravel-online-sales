@@ -1,49 +1,192 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
+<html lang="id">
 
-<html lang="id"><head> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Toko Laravel')</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
 
-<meta charset="UTF-8"> 
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f7f8;
+            color: #222
+        }
 
-<meta name="viewport" content="width=device-width,initial-scale=1"> 
+        a {
+            color: inherit;
+            text-decoration: none
+        }
 
-<meta name="description" content="Belanja kebutuhan sehari-hari dengan pilihan produk, stok yang jelas, dan pengiriman yang mudah."> 
+        .container {
+            max-width: 1120px;
+            margin: auto;
+            padding: 0 20px
+        }
 
-<title>@yield('title','Katalog') · Ruang Belanja</title> 
+        nav {
+            background: #111;
+            color: #fff;
+            padding: 16px 0
+        }
 
-<link rel="stylesheet" href="{{ asset('css/store.css') }}"> 
+        .nav {
+            display: flex;
+            gap: 18px;
+            align-items: center
+        }
 
-</head> 
+        .nav .brand {
+            font-weight: 700;
+            margin-right: auto
+        }
 
-<body> 
+        main {
+            padding: 30px 0
+        }
 
-<div class="top-note">Pilihan sederhana. Belanja lebih nyaman.</div> 
+        .card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 18px
+        }
 
-<header class="site-header"> 
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px
+        }
 
-<nav class="container nav" aria-label="Navigasi utama"> 
+        .btn {
+            display: inline-block;
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            background: #111;
+            color: #fff;
+            cursor: pointer
+        }
 
-<a class="brand" href="{{ route('shop.index') }}"> 
+        .btn-light {
+            background: #ececec;
+            color: #222
+        }
 
-<span class="brand-mark" aria-hidden="true">↗️</span>ruangbelanja<span style="color:#7aa487">.</span></a><a href="{{ route('shop.index') }}" @if(request()->routeIs('shop.*')) aria-current="page" @endif>Jelajahi Produk</a> 
+        .btn-danger {
+            background: #a91515
+        }
 
-@auth @if(auth()->user()->role==='customer')@if(Route::has('cart.index'))<a href="{{ route('cart.index') }}" @if(request()->routeIs('cart.*')) aria-current="page" @endif>Keranjang ({{ array_sum(session('cart',[])) }})</a>@endif 
+        .input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 6px
+        }
 
-@if(Route::has('orders.index')) 
+        label {
+            display: block;
+            margin-bottom: 12px
+        }
 
-<a href="{{ route('orders.index') }}" @if(request()->routeIs('orders.*')) aria-current="page" @endif>Pesanan</a>@endif 
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background: #e9f8ee
+        }
 
-@else<a href="{{ route('admin.dashboard') }}">Dashboard Admin</a>@endif<span class="account">Halo, {{ auth()->user()->name }}</span><form method="POST" action="{{ route('logout') }}">@csrf<button class="btn-light">Keluar</button></form>@else<a href="{{ route('login') }}">Masuk</a><a class="btn" href="{{ route('register') }}">Daftar</a>@endauth</nav></header> 
+        .error {
+            background: #fdecec
+        }
 
-<main class="container">@include('layouts.flash') @yield('content')</main> 
+        .price {
+            font-weight: 700;
+            font-size: 1.1rem
+        }
 
-<footer class="container footer"><strong>ruangbelanja.</strong> 
+        .muted {
+            color: #666
+        }
 
-<span>Proyek praktikum Laravel · Admin & Pelanggan</span> 
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: end
+        }
 
-<span>Belanja dengan informasi yang jelas.</span></footer> 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff
+        }
 
-<script src="{{ asset('js/store.js') }}" defer></script> 
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: left
+        }
 
-</body> 
+        .thumb {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 9px;
+            background: #eee
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="container nav">
+            <a class="brand" href="{{ route('shop.index') }}">Toko Laravel</a>
+            <a href="{{ route('shop.index') }}">Produk</a>
+            @auth
+
+            @if(auth()->user()->role === 'customer')
+
+            <a href="{{ route('cart.index') }}">Keranjang</a>
+            <a href="{{ route('orders.index') }}">Pesanan</a>
+            @else
+
+            <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @endif
+
+            <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn-light" type="submit">Logout</button>
+            </form>
+            @else
+
+            <a href="{{ route('login') }}">Login</a>
+            <a href="{{ route('register') }}">Register</a>
+            @endauth
+
+        </div>
+    </nav>
+    <main>
+        <div class="container">
+            @if(session('success'))<div class="alert">{{ session('success') }}</div>@endif
+
+            @if(session('error'))<div class="alert error">{{ session('error') }}</div>@endif
+
+            @if($errors->any())<div class="alert error">
+
+                <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+
+            </div>@endif
+
+            @yield('content')
+        </div>
+    </main>
+</body>
 
 </html>
